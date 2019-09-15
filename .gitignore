@@ -1,6 +1,7 @@
 # pycharm
 .idea/
 venv/
+*.pyc
 
 # pip package
 build/
