@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from loggerpy.logger_exception import LoggerNameException, LoggerLevelExcepiton
+from loggerpy.logger_exception import LoggerNameException, LoggerLevelException
 from loggerpy.colors import colors
 
 
@@ -61,7 +61,7 @@ class _Level:
     @staticmethod
     def find_level(level):
         if level is None:
-            raise LoggerLevelExcepiton('NONE')
+            raise LoggerLevelException('NONE')
 
         level = level.upper()
 
@@ -78,7 +78,7 @@ class _Level:
         elif level == _Level.CRITICAL['name']:
             return _Level.CRITICAL
         else:
-            raise LoggerLevelExcepiton(level)
+            raise LoggerLevelException(level)
 
 
 class _Logger:

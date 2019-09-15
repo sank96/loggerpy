@@ -6,7 +6,7 @@ class LoggerNameException(Exception):
         return self.message
 
 
-class LoggerLevelExcepiton(Exception):
+class LoggerLevelException(Exception):
     def __init__(self, level):
         self.message = 'No level \'{}\' found.'.format(level.upper())
 
