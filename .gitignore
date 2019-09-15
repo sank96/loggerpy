@@ -1,7 +1,7 @@
 # pycharm
 .idea/
 venv/
-*.pyc
+loggerpy/__pycache__/*.pyc
 
 # pip package
 build/
