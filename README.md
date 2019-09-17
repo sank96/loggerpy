@@ -12,18 +12,18 @@ Simple Python logger for everyday tasks.
 
 ## Table of Contents
 
-* [How to install](#How\ to\ install)
+* [Installation](#Installation)
 * [Instructions](#Instructions)
     * [Configuration](#Configuration)
-    * [Logger](#Create\ a\ logger)
+    * [Logger](#Logger)
     * [Customization](#Customization)
 * [Version](#Version)
-* [Next release](#Next\ release)
+* [Next release](#NextRelease)
 * [License](#License)
 <!-- * [Authors](#Authors) -->
 
 
-## How to install
+## Installation
 The easiest way to install is throw pip.
 
 ```bash
@@ -41,7 +41,7 @@ pip install git+https://github.com/mett96/loggerpy.git
 ### Configuration
 aggiungi il warning se non viene fatta
 
-### Create a logger
+### Logger
 fari diversi esempi 
 
 ### Customization
@@ -50,7 +50,7 @@ custom level
 ## Versions
 - 1.0 : first release
 
-## Next release
+## NextRelease
 - [ ] custom _format_ for timestamp
 - [ ] custom _format_ for all log
 - [ ] custom _color_ for each level
