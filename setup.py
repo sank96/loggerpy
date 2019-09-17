@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="loggerpy",
-    version=CLIENT_VERSIONgit ,
+    version=CLIENT_VERSION,
     author="Mattia Sanchioni",
     author_email="mattia.sanchioni.dev@gmail.com",
     description="A simple logger for everyday tasks",
