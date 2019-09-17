@@ -1,7 +1,6 @@
 import setuptools
 
 CLIENT_VERSION = "0.1.1"
-DEVELOPMENT_STATUS = 'v1.0 - Beta'
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -19,13 +18,15 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license="GPLv3",
     classifiers=[
-        "Development Status :: %s" % DEVELOPMENT_STATUS,
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
         'Intended Audience :: Developers',
+        "Intended Audience :: Information Technology",
+        "Topic :: Software Development :: Bug Tracking",
         'Topic :: Software Development :: Build Tools',
     ],
 )
