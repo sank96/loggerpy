@@ -1,12 +1,13 @@
 import os
 from datetime import datetime
-from typing import Dict, Union
 
-from loggerpy.logger_exception import LoggerNameException, LoggerLevelException
+from loggerpy.logger_exception import LoggerNameException, LoggerLevelException, LoggerPathException
 from loggerpy.colors import colors
 
+__all__ = ['Level', 'configure', 'get_logger']
 
-class Level:
+
+class Level(object):
     """
     Useful class that collects all the possible levels
     NO_LOGGER: str
@@ -28,8 +29,7 @@ class Level:
         return self.upper()
 
 
-# TODO dare la possibilità di modificare i colori
-class _Level:
+class _Level(object):
     """
     This class represents the possible levels of the logger.
     ...
@@ -104,7 +104,7 @@ class _Level:
             raise LoggerLevelException(level)
 
 
-class _Logger:
+class _Logger(object):
     """
     Logger class provides all the tools needed to log everything
     ...
@@ -179,9 +179,19 @@ class _Logger:
                                                         self.__save_level['name'], self.__path)
 
     def _get_name(self):
+        """
+        Return the name of the logger
+        :return: name of logger
+        :rtype: str
+        """
         return self.__name
 
     def _get_complete_name(self):
+        """
+        Return the complete name of logger
+        :return: domain + name of the logger as a path
+        :rtype: str
+        """
         if self.__domain == self.__name:
             return self.__name
         return self.__domain + '/' + self.__name
@@ -339,79 +349,129 @@ __print_level = Level.DEBUG
 __save_level = Level.NO_LOGGER
 
 
-# TODO (decidere se aggiungerlo o meno nel metodo configure) modifica del format della stampa
-## decidere se ci possono essere due format differenti per print e save
-# INFO regolare per i PATH. Non ci devono essere `/` né all'inizio né alla fine
-
-
 def configure(domain=None, info=False, print_level=None, save_level=None, path=None):
+    """
+    This method manages all the possible configuration of loggerpy package.
+    If it is not configured a warning stamp is printed and it is configured with default setting
+    :param domain: Main domain of logger. This can not be change after the first initialization
+    :type domain: str
+    :param info: If you want to print an info message at the first configuration
+    :type info: bool
+    :param print_level: set the default print level
+    :type print_level: Level
+    :param save_level: set the default save level
+    :type save_level: Level
+    :param path: Set the path to save log. It is not relevant if path contains '/' at the beginning or at the
+        end, it is always managed
+    :type path: str
+    """
     global __domain, __print_level, __save_level, __logger_tree, __path, __configured
 
-    if not __configured:
-        # TODO aggiungere un warning e sistemare il __path
-        pass
+    # fixme: manage the insert of space into path. I can create a function that validate the path
+    #  (space, '/', special character)
+    if path == '' or path == '\n' or path == '\t':
+        raise LoggerPathException(path)
 
-    if domain is not None:
-        __domain = domain
+    if __configured:
+        if print_level is not None:
+            __print_level = print_level
 
-    if path is not None:
-        if path[0] == '/':
-            path = path[1:]
-        if path[-1:] == '/':
-            path = path[:-1]
-        path = os.getcwd() + '/' + path
+        if save_level is not None:
+            __save_level = save_level
+
     else:
-        path = os.getcwd()
+        if domain is not None:
+            __domain = domain
 
-    __path = path
+        if path is not None:
+            if path[0] == '/':
+                path = path[1:]
+            if path[-1:] == '/':
+                path = path[:-1]
+            path = os.getcwd() + '/' + path
+        else:
+            path = os.getcwd()
 
-    logger = _Logger(__domain, __domain, path)
-    __logger_tree.append(logger)
+        __path = path
 
-    if print_level is not None:
-        logger.print_level = print_level
-        __print_level = print_level
+        logger = _Logger(__domain, __domain, path)
+        __logger_tree.append(logger)
 
-    if save_level is not None:
-        logger.save_level = save_level
-        __save_level = save_level
+        if print_level is not None:
+            logger.print_level = print_level
+            __print_level = print_level
 
-    if info:
-        logger.critical('Logger configured...')
+        if save_level is not None:
+            logger.save_level = save_level
+            __save_level = save_level
+
+        if info:
+            logger.critical('Logger configured...')
+            # next: make the text customizable
+            # next: make the log level customizable
+
+        __configured = True
 
 
 def get_logger(name, print_level=None, save_level=None, path=None):
-    global __domain, __logger_tree, __save_level, __print_level, __path
+    """
+    This method allows to instance a logger object.
+    If it is given a name that correspond to another already logger instanced, it is returned. In this case the path
+    can not be changed.
+    :param name: Name of the logger
+    :type name: str
+    :param print_level: level of print logging
+    :type print_level: Level
+    :param save_level:  level of save logging
+    :type save_level: Level
+    :param path: path of save logging
+    :type path: str
+    :return: return the logger with the input configuration
+    :rtype: _Logger
+    """
+    global __domain, __logger_tree, __save_level, __print_level, __path, __configured
+
+    if not __configured:
+        import warnings
+        warnings.warn('No configurations are done. The default setting are used.')
+        path = os.getcwd()
+        configure(path=path)
+        __configured = True
 
     if name is None:
         raise LoggerNameException('The input name is None')
     elif name == '' or name == '\n' or name == '\t':
         raise LoggerNameException('The input name is empty or a special character')
 
+    if path == '' or path == '\n' or path == '\t':
+        raise LoggerPathException(path)
+
     if path is not None:
-        if path[0] == '/':
-            path = path[1:]
-        if path[-1:] == '/':
-            path = path[:-1]
+        complete_path = path
+        if complete_path[0] == '/':
+            complete_path = complete_path[1:]
+        if complete_path[-1:] == '/':
+            complete_path = complete_path[:-1]
 
         if __path is None:
-            path = os.getcwd() + '/' + path
+            complete_path = os.getcwd() + '/' + complete_path
         else:
-            path = __path + '/' + path
+            complete_path = __path + '/' + complete_path
     else:
-        if __path is not None:
-            # INFO questo controllo dovrebbe essere intuile xk il tutto viene sempre configurato
-            path = __path
+        complete_path = __path
 
     if __find_logger(name) is None:
-        logger = _Logger(name, __domain, path, print_level=__print_level, save_level=__save_level)
+        logger = _Logger(name, __domain, complete_path, print_level=__print_level, save_level=__save_level)
         __logger_tree.append(logger)
 
     else:
         logger = __find_logger(name)
 
         if path is not None:
-            # TODO aggiungere un warning, tentativo di modifica di un path di un logger già esistente
+            import warnings
+            warnings.warn('The input name corresponds to an already existing logger and it is trying to '
+                          'modify the saving path. This modification is not allowed so it is not applied.',
+                          stacklevel=2)
             pass
 
     if print_level is not None:
@@ -424,6 +484,13 @@ def get_logger(name, print_level=None, save_level=None, path=None):
 
 
 def __find_logger(name):
+    """
+    This method search a logger in logger_tree with the name as input
+    :param name: input name
+    :type name: str
+    :return: Return an instance of the logger if found, otherwise return None
+    :rtype: _Logger
+    """
     for logger in __logger_tree:
         if logger._get_name() is name:
             return logger

@@ -1,6 +1,6 @@
 import setuptools
 
-CLIENT_VERSION = "0.1.1"
+CLIENT_VERSION = "1.0"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -10,7 +10,7 @@ setuptools.setup(
     version=CLIENT_VERSION,
     author="Mattia Sanchioni",
     author_email="mattia.sanchioni.dev@gmail.com",
-    description="A simple logger for everyday tasks",
+    description="The simplest Python logger for everyday tasks.",
     keywords="logger log logging simple pylogger py-logger loggerpy logger-py simplelogger",
     long_description=long_description,
     long_description_content_type="text/markdown",

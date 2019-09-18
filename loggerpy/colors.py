@@ -6,6 +6,21 @@ def get_color(type='0', bg='0', fg='0', text=' '):
     return s
 
 
+def test_color():
+    """
+    Print all combination of colors
+    """
+    for style in range(10):
+        for fg in range(30, 38):
+            s1 = ''
+            for bg in range(40, 48):
+                # print('{} {} {}'.format(style, fg, bg))
+                format = ';'.join([str(style), str(fg), str(bg)])
+                s1 += '\x1b[%sm %s \x1b[0m' % (format, format)
+            print(s1)
+        print('\n')
+
+
 class colors:
     start = '\x1b['
     stop = '\x1b[0m'
@@ -48,15 +63,3 @@ class colors:
         purple = '45'
         cyan = '46'
         lightgrey = '47'
-
-
-def test():
-    for style in range(10):
-        for fg in range(30, 38):
-            s1 = ''
-            for bg in range(40, 48):
-                # print('{} {} {}'.format(style, fg, bg))
-                format = ';'.join([str(style), str(fg), str(bg)])
-                s1 += '\x1b[%sm %s \x1b[0m' % (format, format)
-            print(s1)
-        print('\n')
