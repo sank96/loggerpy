@@ -6,9 +6,9 @@ The simplest Python logger for everyday tasks.
 ![](https://img.shields.io/pypi/v/loggerpy?color=green)
 ![](https://img.shields.io/pypi/pyversions/loggerpy)
 ![](https://img.shields.io/github/license/mett96/loggerpy)
-<!-- ![](https://img.shields.io/github/stars/mett96/loggerpy?style=social) -->
+![](https://img.shields.io/github/stars/mett96/loggerpy?style=social)
 
-<!-- aumenta questo paragrafo -->
+
 
 ## Table of Contents
 
@@ -42,8 +42,7 @@ pip install git+https://github.com/mett96/loggerpy.git
 
 In order to use this simple logger, many examples are provided inside [examples directory](https://github.com/mett96/loggerpy/tree/master/examples)
 
-![](imgs/logger_example.png)
-
+![logging example](https://github.com/mett96/loggerpy/blob/master/imgs/logger_example.png)
 
 
 ### Configuration
@@ -98,6 +97,8 @@ The customizable parameters are:
 ```python
 logger = get_logger('first', print_level=Level.WARNING, save_level=Level.INFO, path='custom_logger')
 ```
+
+The complete [example](https://github.com/mett96/loggerpy/tree/master/examples/custom_logger.py)
 
 ### LoggerRecovery
 Each logger has a unique name. So, when you ask to _get_logger_ to create a logger with an already existing name, it returns an instance of the unique logger with input name.    
