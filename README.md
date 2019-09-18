@@ -42,7 +42,7 @@ pip install git+https://github.com/mett96/loggerpy.git
 
 In order to use this simple logger, many examples are provided inside [examples directory](https://github.com/mett96/loggerpy/tree/master/examples)
 
-![logging example](https://github.com/mett96/loggerpy/blob/master/imgs/logger_example.png)
+![logging ](https://raw.githubusercontent.com/mett96/loggerpy/master/imgs/logger_example.png)
 
 
 ### Configuration
