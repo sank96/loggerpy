@@ -2,7 +2,7 @@
 
 The simplest Python logger for everyday tasks.
 
-[![](https://img.shields.io/github/manifest-json/v/mett96/loggerpy?color=9cf)](https://github.com/mett96/loggerpy/releases/tag/v1.0)
+[![](https://img.shields.io/github/v/release/mett96/loggerpy?color=orange)](https://github.com/mett96/loggerpy/releases/tag/v1.0)
 [![](https://img.shields.io/pypi/v/loggerpy?color=green)](https://pypi.org/project/loggerpy/)
 [![](https://img.shields.io/pypi/pyversions/loggerpy)](https://www.python.org/downloads/release/python-370/)
 [![](https://img.shields.io/github/license/mett96/loggerpy)](https://github.com/mett96/loggerpy/blob/master/LICENSE.md)
