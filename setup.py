@@ -1,6 +1,6 @@
 import setuptools
 
-CLIENT_VERSION = "1.0"
+CLIENT_VERSION = "1.0.1"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
