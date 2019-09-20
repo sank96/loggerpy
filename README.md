@@ -119,7 +119,15 @@ The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree
 
 
 ## Versions
-- 1.0 : first release
+*stable version*
+- 1.0 : released
+
+*development version*
+- 1.1 : on going
+    - [ ] introducing `pprint` and `json` to print better log
+    - [ ] try to expose _Level methods without give the possibility to create a new object
+
+
 
 ## NextRelease
 - [ ] custom _format_ for timestamp
