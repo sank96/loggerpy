@@ -126,6 +126,8 @@ The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree
 - 1.1 : on going
     - [ ] introducing `pprint` and `json` to print better log
     - [ ] try to expose _Level methods without give the possibility to create a new object
+    - [ ] review path of saving log
+    - [ ] the configuration works only in one file not over all package
 
 
 
