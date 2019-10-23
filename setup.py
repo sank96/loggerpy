@@ -1,12 +1,16 @@
 import setuptools
+import pkg_resources
 
-CLIENT_VERSION = "1.0.1"
+NAME = "loggerpy"
+
+print('Old version: {}'.format(pkg_resources.get_distribution(NAME).version))
+CLIENT_VERSION = input('Input new version: ')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="loggerpy",
+    name=NAME,
     version=CLIENT_VERSION,
     author="Mattia Sanchioni",
     author_email="mattia.sanchioni.dev@gmail.com",
