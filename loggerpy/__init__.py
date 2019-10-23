@@ -344,13 +344,6 @@ class _Logger(object):
         _Logger.lock_print = False
 
 
-# __configured = False
-# __domain = 'loggerpy'
-# __path = None
-# __logger_tree: [_Logger] = []
-# __print_level = Level.DEBUG
-# __save_level = Level.NO_LOGGER
-
 class __Configuration:
     configured: bool = False
     domain: str = 'loggerpy'
@@ -358,6 +351,32 @@ class __Configuration:
     logger_tree: [_Logger] = []
     print_level: Level = Level.DEBUG
     save_level: Level = Level.NO_LOGGER
+
+
+def __validate_path(path):
+    if path == '' or path == '\n' or path == '\t':
+        raise LoggerPathException(path)
+
+    if path is None:
+        if __Configuration.path is None:
+            return os.getcwd()
+        else:
+            return __Configuration.path
+    else:
+        if os.path.isabs(path):
+            if not os.path.exists(path):
+                os.mkdir(path)
+            return path
+        elif __Configuration.path is not None:
+            complete_path = __Configuration.path + '/' + path
+            if not os.path.exists(complete_path):
+                os.makedirs(complete_path)
+            return complete_path
+        else:
+            complete_path = os.path.abspath(path)
+            if not os.path.exists(complete_path):
+                os.makedirs(complete_path)
+            return complete_path
 
 
 def configure(domain=None, info=False, print_level=None, save_level=None, path=None):
@@ -373,14 +392,9 @@ def configure(domain=None, info=False, print_level=None, save_level=None, path=N
     :param save_level: set the default save level
     :type save_level: Level
     :param path: Set the path to save log. It is not relevant if path contains '/' at the beginning or at the
-        end, it is always managed
+        end, it is always managed. The default path is the project path
     :type path: str
     """
-
-    # fixme: manage the insert of space into path. I can create a function that validate the path
-    #  (space, '/', special character)
-    if path == '' or path == '\n' or path == '\t':
-        raise LoggerPathException(path)
 
     if __Configuration.configured:
         if print_level is not None:
@@ -393,18 +407,12 @@ def configure(domain=None, info=False, print_level=None, save_level=None, path=N
         if domain is not None:
             __Configuration.domain = domain
 
-        if path is not None:
-            if path[0] == '/':
-                path = path[1:]
-            if path[-1:] == '/':
-                path = path[:-1]
-            path = os.getcwd() + '/' + path
-        else:
-            path = os.getcwd()
+        try:
+            __Configuration.path = __validate_path(path)
+        except LoggerPathException as e:
+            raise e
 
-        __Configuration.path = path
-
-        logger = _Logger(__Configuration.domain, __Configuration.domain, path)
+        logger = _Logger(__Configuration.domain, __Configuration.domain, __Configuration.path)
         __Configuration.logger_tree.append(logger)
 
         if print_level is not None:
@@ -434,7 +442,7 @@ def get_logger(name, print_level=None, save_level=None, path=None):
     :type print_level: Level
     :param save_level:  level of save logging
     :type save_level: Level
-    :param path: path of save logging
+    :param path: path of save logging. The default path is the path configured into configuration method.
     :type path: str
     :return: return the logger with the input configuration
     :rtype: _Logger
@@ -443,30 +451,17 @@ def get_logger(name, print_level=None, save_level=None, path=None):
     if not __Configuration.configured:
         import warnings
         warnings.warn('No configurations are done. The default setting are used.')
-        path = os.getcwd()
-        configure(path=path)
+        configure()
 
     if name is None:
         raise LoggerNameException('The input name is None')
     elif name == '' or name == '\n' or name == '\t':
         raise LoggerNameException('The input name is empty or a special character')
 
-    if path == '' or path == '\n' or path == '\t':
-        raise LoggerPathException(path)
-
-    if path is not None:
-        complete_path = path
-        if complete_path[0] == '/':
-            complete_path = complete_path[1:]
-        if complete_path[-1:] == '/':
-            complete_path = complete_path[:-1]
-
-        if __Configuration.path is None:
-            complete_path = os.getcwd() + '/' + complete_path
-        else:
-            complete_path = __Configuration.path + '/' + complete_path
-    else:
-        complete_path = __Configuration.path
+    try:
+        complete_path = __validate_path(path)
+    except LoggerPathException as e:
+        raise e
 
     if __find_logger(name) is None:
         logger = _Logger(name, __Configuration.domain, complete_path,
