@@ -70,6 +70,22 @@ Importing _Level_ from loggerpy, they can be used eg Level.DEBUG or Level.WARNIN
 - Level.ERROR
 - Level.CRITICAL
 
+The _path_ can be set as absolute or relative.
+If the path is an absolute path it is used directly, otherwise it put after the project path. The default value is the project path
+
+     E.g.
+     Relative path
+     -------------
+     >>> configure(path='relative_path')
+     In this case the used path is:
+     > /path/to/the/project/relative_path
+
+     Absolute path
+     -------------
+     >>> configure(path='absolute_path')
+     It is setted as global path
+     > /absolute_path/
+
 Configuration [example](https://github.com/mett96/loggerpy/tree/master/examples/configuration.py)
 
 
@@ -120,14 +136,16 @@ The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree
 
 ## Versions
 *stable version*
-- 1.0 : released
+* 1.0 : 
+   - first release
+* 1.1 : 
+   - rewritten the input path of saving log in _configure()_ and _get_logger()_
+   - configuration works properly for all file of your project
 
 *development version*
-- 1.1 : on going
+- 1.2 : on going
     - [ ] introducing `pprint` and `json` to print better log
     - [ ] try to expose _Level methods without give the possibility to create a new object
-    - [ ] review path of saving log
-    - [ ] the configuration works only in one file not over all package
 
 
 
