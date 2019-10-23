@@ -4,7 +4,7 @@ python3 setup.py sdist bdist_wheel
 python3 -m twine upload dist/*
 
 echo -n "Waiting..."
-for _ in {1..10}
+for _ in {1..30}
 do
   echo -n "."
   sleep 0.5
