@@ -60,18 +60,21 @@ class _Level(object):
         Return the dict associated to the level in input
     """
 
-    NO_LOGGER = {'color': colors.get_color(), 'name': Level.NO_LOGGER,
-                 'level': 5}
-    DEBUG = {'color': colors.get_color(fg=colors.fg.blue), 'name': Level.DEBUG,
-             'level': 0}
-    INFO = {'color': colors.get_color(fg=colors.fg.lightgreen), 'name': Level.INFO,
-            'level': 1}
-    WARNING = {'color': colors.get_color(fg=colors.fg.yellow, type=colors.bold), 'name': Level.WARNING,
-               'level': 2}
-    ERROR = {'color': colors.get_color(fg=colors.fg.red), 'name': Level.ERROR,
-             'level': 3}
-    CRITICAL = {'color': colors.get_color(bg=colors.bg.red), 'name': Level.CRITICAL,
-                'level': 4}
+    NO_LOGGER: '_Level' = {'color': colors.get_color(), 'name': Level.NO_LOGGER,
+                           'level': 5}
+    DEBUG: '_Level' = {'color': colors.get_color(fg=colors.fg.blue), 'name': Level.DEBUG,
+                       'level': 0}
+    INFO: '_Level' = {'color': colors.get_color(fg=colors.fg.lightgreen), 'name': Level.INFO,
+                      'level': 1}
+    WARNING: '_Level' = {'color': colors.get_color(fg=colors.fg.yellow, type=colors.bold), 'name': Level.WARNING,
+                         'level': 2}
+    ERROR: '_Level' = {'color': colors.get_color(fg=colors.fg.red), 'name': Level.ERROR,
+                       'level': 3}
+    CRITICAL: '_Level' = {'color': colors.get_color(bg=colors.bg.red), 'name': Level.CRITICAL,
+                          'level': 4}
+
+    def __getitem__(self, key):
+        return self[key]
 
     @staticmethod
     def find_level(level):
@@ -341,12 +344,39 @@ class _Logger(object):
         _Logger.lock_print = False
 
 
-__configured = False
-__domain = 'loggerpy'
-__path = None
-__logger_tree: [_Logger] = []
-__print_level = Level.DEBUG
-__save_level = Level.NO_LOGGER
+class __Configuration:
+    configured: bool = False
+    domain: str = 'loggerpy'
+    path: str = None
+    logger_tree: [_Logger] = []
+    print_level: Level = Level.DEBUG
+    save_level: Level = Level.NO_LOGGER
+
+
+def __validate_path(path):
+    if path == '' or path == '\n' or path == '\t':
+        raise LoggerPathException(path)
+
+    if path is None:
+        if __Configuration.path is None:
+            return os.getcwd()
+        else:
+            return __Configuration.path
+    else:
+        if os.path.isabs(path):
+            if not os.path.exists(path):
+                os.mkdir(path)
+            return path
+        elif __Configuration.path is not None:
+            complete_path = __Configuration.path + '/' + path
+            if not os.path.exists(complete_path):
+                os.makedirs(complete_path)
+            return complete_path
+        else:
+            complete_path = os.path.abspath(path)
+            if not os.path.exists(complete_path):
+                os.makedirs(complete_path)
+            return complete_path
 
 
 def configure(domain=None, info=False, print_level=None, save_level=None, path=None):
@@ -362,55 +392,43 @@ def configure(domain=None, info=False, print_level=None, save_level=None, path=N
     :param save_level: set the default save level
     :type save_level: Level
     :param path: Set the path to save log. It is not relevant if path contains '/' at the beginning or at the
-        end, it is always managed
+        end, it is always managed. The default path is the project path
     :type path: str
     """
-    global __domain, __print_level, __save_level, __logger_tree, __path, __configured
 
-    # fixme: manage the insert of space into path. I can create a function that validate the path
-    #  (space, '/', special character)
-    if path == '' or path == '\n' or path == '\t':
-        raise LoggerPathException(path)
-
-    if __configured:
+    if __Configuration.configured:
         if print_level is not None:
-            __print_level = print_level
+            __Configuration.print_level = print_level
 
         if save_level is not None:
-            __save_level = save_level
+            __Configuration.save_level = save_level
 
     else:
         if domain is not None:
-            __domain = domain
+            __Configuration.domain = domain
 
-        if path is not None:
-            if path[0] == '/':
-                path = path[1:]
-            if path[-1:] == '/':
-                path = path[:-1]
-            path = os.getcwd() + '/' + path
-        else:
-            path = os.getcwd()
+        try:
+            __Configuration.path = __validate_path(path)
+        except LoggerPathException as e:
+            raise e
 
-        __path = path
-
-        logger = _Logger(__domain, __domain, path)
-        __logger_tree.append(logger)
+        logger = _Logger(__Configuration.domain, __Configuration.domain, __Configuration.path)
+        __Configuration.logger_tree.append(logger)
 
         if print_level is not None:
             logger.print_level = print_level
-            __print_level = print_level
+            __Configuration.print_level = print_level
 
         if save_level is not None:
             logger.save_level = save_level
-            __save_level = save_level
+            __Configuration.save_level = save_level
 
         if info:
             logger.critical('Logger configured...')
             # next: make the text customizable
             # next: make the log level customizable
 
-        __configured = True
+        __Configuration.configured = True
 
 
 def get_logger(name, print_level=None, save_level=None, path=None):
@@ -424,45 +442,31 @@ def get_logger(name, print_level=None, save_level=None, path=None):
     :type print_level: Level
     :param save_level:  level of save logging
     :type save_level: Level
-    :param path: path of save logging
+    :param path: path of save logging. The default path is the path configured into configuration method.
     :type path: str
     :return: return the logger with the input configuration
     :rtype: _Logger
     """
-    global __domain, __logger_tree, __save_level, __print_level, __path, __configured
 
-    if not __configured:
+    if not __Configuration.configured:
         import warnings
         warnings.warn('No configurations are done. The default setting are used.')
-        path = os.getcwd()
-        configure(path=path)
-        __configured = True
+        configure()
 
     if name is None:
         raise LoggerNameException('The input name is None')
     elif name == '' or name == '\n' or name == '\t':
         raise LoggerNameException('The input name is empty or a special character')
 
-    if path == '' or path == '\n' or path == '\t':
-        raise LoggerPathException(path)
-
-    if path is not None:
-        complete_path = path
-        if complete_path[0] == '/':
-            complete_path = complete_path[1:]
-        if complete_path[-1:] == '/':
-            complete_path = complete_path[:-1]
-
-        if __path is None:
-            complete_path = os.getcwd() + '/' + complete_path
-        else:
-            complete_path = __path + '/' + complete_path
-    else:
-        complete_path = __path
+    try:
+        complete_path = __validate_path(path)
+    except LoggerPathException as e:
+        raise e
 
     if __find_logger(name) is None:
-        logger = _Logger(name, __domain, complete_path, print_level=__print_level, save_level=__save_level)
-        __logger_tree.append(logger)
+        logger = _Logger(name, __Configuration.domain, complete_path,
+                         print_level=__Configuration.print_level, save_level=__Configuration.save_level)
+        __Configuration.logger_tree.append(logger)
 
     else:
         logger = __find_logger(name)
@@ -491,7 +495,7 @@ def __find_logger(name):
     :return: Return an instance of the logger if found, otherwise return None
     :rtype: _Logger
     """
-    for logger in __logger_tree:
+    for logger in __Configuration.logger_tree:
         if logger._get_name() is name:
             return logger
     return None

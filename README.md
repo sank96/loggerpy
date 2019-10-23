@@ -95,7 +95,7 @@ The customizable parameters are:
 - path
 
 ```python
-logger = get_logger('first', print_level=Level.WARNING, save_level=Level.INFO, path='custom_logger')
+logger = get_logger('first', print_level=Level.WARNING, save_level=Level.INFO, path='path_of_log')
 ```
 
 The complete [example](https://github.com/mett96/loggerpy/tree/master/examples/custom_logger.py)
@@ -119,7 +119,17 @@ The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree
 
 
 ## Versions
-- 1.0 : first release
+*stable version*
+- 1.0 : released
+
+*development version*
+- 1.1 : on going
+    - [ ] introducing `pprint` and `json` to print better log
+    - [ ] try to expose _Level methods without give the possibility to create a new object
+    - [ ] review path of saving log
+    - [ ] the configuration works only in one file not over all package
+
+
 
 ## NextRelease
 - [ ] custom _format_ for timestamp
