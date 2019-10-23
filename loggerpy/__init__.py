@@ -391,8 +391,22 @@ def configure(domain=None, info=False, print_level=None, save_level=None, path=N
     :type print_level: Level
     :param save_level: set the default save level
     :type save_level: Level
-    :param path: Set the path to save log. It is not relevant if path contains '/' at the beginning or at the
-        end, it is always managed. The default path is the project path
+    :param path: Set the path to save log. If the path is an absolute path it is used directly, otherwise it is
+        put after the project path. The default value is the project path
+
+        E.g.
+        Relative path
+        -------------
+        >>> configure(path='relative_path')
+        In this case the used path is:
+        > /path/to/the/project/relative_path
+
+        Absolute path
+        -------------
+        >>> configure(path='absolute_path')
+        It is setted as global path
+        > /absolute_path/
+
     :type path: str
     """
 
@@ -442,7 +456,9 @@ def get_logger(name, print_level=None, save_level=None, path=None):
     :type print_level: Level
     :param save_level:  level of save logging
     :type save_level: Level
-    :param path: path of save logging. The default path is the path configured into configuration method.
+    :param path: path of save logging. The default path is the one used as a parameter in the configuration path
+        if entered otherwise it is the project path. If `path` is absolute, it is used directly,
+        otherwise the relative path is inserted after the configured global path.
     :type path: str
     :return: return the logger with the input configuration
     :rtype: _Logger
