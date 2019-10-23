@@ -95,7 +95,7 @@ The customizable parameters are:
 - path
 
 ```python
-logger = get_logger('first', print_level=Level.WARNING, save_level=Level.INFO, path='custom_logger')
+logger = get_logger('first', print_level=Level.WARNING, save_level=Level.INFO, path='path_of_log')
 ```
 
 The complete [example](https://github.com/mett96/loggerpy/tree/master/examples/custom_logger.py)
