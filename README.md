@@ -32,11 +32,6 @@ The easiest way to install is throw pip.
 pip install loggerpy
 ```
 
-Or you can install directly from Github
-```bash
-pip install git+https://github.com/mett96/loggerpy.git
-```
-
 ## Instructions
 
 
@@ -46,20 +41,23 @@ In order to use this simple logger, many examples are provided inside [examples 
 
 
 ### Configuration
-The first thing to do is to configure the global settings of logger package.
+The main classes of the `loggerpy` package are `Logger` and `Level`.
 
 ```python
-import loggerpy
-
-loggerpy.configure()
+from loggerpy import Logger, Level
 ```
 
-The possible customization of configurations are:
-- domain: the main name of all loggers
-- path: the path of saving log if you want to save them
+The `Logger` class is a _Singleton_, so you can recall the `__init__` method through `Logger()` and the same instance will always be returned.
+
+```python
+logger = Logger()
+```
+
+The possible customization of the logger instance are:
+- name: the name of all loggers
+- folder: the path of saving log if you want to save them
 - print_level: the minimum level of printing 
 - save_level: the minimum level of saving, they can be different
-- info: boolean value if you want to print the default string _"Logger configured..."_
 
 In order to simplify the customization of printing and saving level it is provided a class that contained the 6 possible levels of logging. 
 Importing _Level_ from loggerpy, they can be used eg Level.DEBUG or Level.WARNING
@@ -76,13 +74,13 @@ If the path is an absolute path it is used directly, otherwise it put after the 
      E.g.
      Relative path
      -------------
-     >>> configure(path='relative_path')
+     >>> logger.folder = 'relative_path'
      In this case the used path is:
      > /path/to/the/project/relative_path
 
      Absolute path
      -------------
-     >>> configure(path='absolute_path')
+     >>> logger.folder = 'absolute_path'
      It is setted as global path
      > /absolute_path/
 
@@ -92,46 +90,22 @@ Configuration [example](https://github.com/mett96/loggerpy/tree/master/examples/
 ### Logger
 Now, it's time to create your first logger.
 ```python
-from loggerpy import configure, get_logger
+from loggerpy import Logger
 
-configure()
-
-logger = get_logger('custom_name')
-
+logger = Logger()
+logger.name = "First logger"
 ```
 
 First logger [example](https://github.com/mett96/loggerpy/tree/master/examples/first_logger.py)
 
 ### Customization
-When we use _get_logger_ we can set custom parameters for this specific logger.
-They are independent from the parameters set during configuration.
-The customizable parameters are:
-- print_level
-- save_level
-- path
+The parameters of the Logger class can be set all in one time.
 
 ```python
-logger = get_logger('first', print_level=Level.WARNING, save_level=Level.INFO, path='path_of_log')
+logger.configure(name="Name", log_folder="path/to/log/folder", print_level=Level.DEBUG, save_level=LEVEL.WARNING)
 ```
 
-The complete [example](https://github.com/mett96/loggerpy/tree/master/examples/custom_logger.py)
-
-### LoggerRecovery
-Each logger has a unique name. So, when you ask to _get_logger_ to create a logger with an already existing name, it returns an instance of the unique logger with input name.    
-Only in this case, if it is given also a custom path it is ignored in order to not split the logs into different files
-
-```python
-logger = get_logger('unique_name')
-logger1 = get_logger('unique_name')
-
-print(logger1 == logger)
-print(hash(logger))
-print(hash(logger1))
-```
-
-The equality of the two loggers can be verified by printing the result of the equality of the two objects, or printing the hash of each object.
-
-The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree/master/examples/logger_recovery.py)
+An [example](https://github.com/mett96/loggerpy/tree/master/examples/second_logger.py)
 
 
 ## Versions
@@ -141,11 +115,10 @@ The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree
 * 1.1 : 
    - rewritten the input path of saving log in _configure()_ and _get_logger()_
    - configuration works properly for all file of your project
-
-*development version*
-- 1.2 : on going
-    - [ ] introducing `pprint` and `json` to print better log
-
+  
+* 2.0 :
+  - Logger is now a Singleton
+  - Level is an enum
 
 
 ## NextFeatures
