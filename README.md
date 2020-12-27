@@ -6,7 +6,7 @@ The simplest Python logger for everyday tasks.
 [![](https://img.shields.io/pypi/v/loggerpy?color=green)](https://pypi.org/project/loggerpy/)
 [![](https://img.shields.io/pypi/pyversions/loggerpy)](https://www.python.org/downloads/release/python-370/)
 [![](https://img.shields.io/github/license/mett96/loggerpy)](https://github.com/mett96/loggerpy/blob/master/LICENSE.md)
-<!-- [![](https://img.shields.io/github/stars/mett96/loggerpy?style=social)](https://github.com/mett96/loggerpy) -->
+[![](https://img.shields.io/github/stars/mett96/loggerpy?style=social)](https://github.com/mett96/loggerpy)
 
 
 
@@ -19,7 +19,7 @@ The simplest Python logger for everyday tasks.
     * [Customization](#Customization)
     * [Logger Recovery](#LoggerRecovery)
 * [Version](#Version)
-* [Next release](#NextRelease)
+* [Next features](#NextFeatures)
 * [License](#License)
 <!-- * [Authors](#Authors) -->
 
@@ -145,15 +145,13 @@ The complete the in the linkes [example](https://github.com/mett96/loggerpy/tree
 *development version*
 - 1.2 : on going
     - [ ] introducing `pprint` and `json` to print better log
-    - [ ] try to expose _Level methods without give the possibility to create a new object
 
 
 
-## NextRelease
+## NextFeatures
 - [ ] custom _format_ for timestamp
 - [ ] custom _format_ for all log
 - [ ] custom _color_ for each level
-- [ ] inherit the _domain_ from another logger
 
 <!-- ## Authors -->
 

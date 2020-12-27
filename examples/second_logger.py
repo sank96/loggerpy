@@ -3,7 +3,8 @@ if __name__ == '__main__':
 
     logger = Logger()
     logger.name = "First logger"
-    logger.folder = "/Users/jarvis/Documents/workspace/Python/loggerpy/test"
+    logger.folder = "../test/test"
+    print(logger.folder)
     logger.print_level = Level.DEBUG
     logger.save_level = Level.DEBUG
 

@@ -1,13 +1,11 @@
-import os
-from datetime import datetime
+from enum import Enum
 
-from loggerpy.logger_exception import LoggerNameException, LoggerLevelException, LoggerPathException
 from loggerpy.colors import colors
 
-__all__ = ['Level', 'configure', 'get_logger']
+__all__ = ['Level', 'Logger']
 
 
-class Level(object):
+class Level(Enum):
     """
     Useful class that collects all the possible levels
     NO_LOGGER: str
@@ -25,252 +23,151 @@ class Level(object):
     ERROR = 'ERROR'
     CRITICAL = 'CRITICAL'
 
-    def upper(self):
-        return self.upper()
+
+from loggerpy.logger_exception import LoggerLevelException, LoggerNameException
 
 
-class _Level(object):
-    """
-    This class represents the possible levels of the logger.
-    ...
-    Attributes
-    ----------
-    DEBUG: dict
-        The lowest priority level. Usually it is not contained into saved log, but it is only used in coding.
-        Default color blue.
-    INFO: dict
-        It is usually used to show some information, e.g. after a computation
-        Default color green.
-    WARNING: dict
-        It is used to represent something that is not going as planned, but it not broke the execution of program.
-        Default color yellow.
-    ERROR: dict
-        It represents the error that blocks the execution of the script.
-        Default color red
-    CRITICAL: dict
-        It represent a very important error that must be fix ASAP.
-        Default color black with a red background.
-    NO_LOGGER: dict
-        It is the level that not print or save the log.
-        It is usually used when the developer wants only save or print the logs.
+class _Level(Enum):
+    NO_LOGGER = (Level.NO_LOGGER, colors.get_color(), 5)
+    DEBUG = (Level.DEBUG, colors.get_color(fg=colors.fg.blue), 0)
+    INFO = (Level.INFO, colors.get_color(fg=colors.fg.lightgreen), 1)
+    WARNING = (Level.WARNING, colors.get_color(fg=colors.fg.yellow, type=colors.bold), 2)
+    ERROR = (Level.ERROR, colors.get_color(fg=colors.fg.red), 3)
+    CRITICAL = (Level.CRITICAL, colors.get_color(bg=colors.bg.red), 4)
 
-    Methods
-    -------
-    find_level(level)
-        Return the dict associated to the level in input
-    """
+    def __init__(self, level_type: Level, color: str, level: int):
+        self.level_type = level_type
+        self.color = color
+        self.level = level
 
-    NO_LOGGER: '_Level' = {'color': colors.get_color(), 'name': Level.NO_LOGGER,
-                           'level': 5}
-    DEBUG: '_Level' = {'color': colors.get_color(fg=colors.fg.blue), 'name': Level.DEBUG,
-                       'level': 0}
-    INFO: '_Level' = {'color': colors.get_color(fg=colors.fg.lightgreen), 'name': Level.INFO,
-                      'level': 1}
-    WARNING: '_Level' = {'color': colors.get_color(fg=colors.fg.yellow, type=colors.bold), 'name': Level.WARNING,
-                         'level': 2}
-    ERROR: '_Level' = {'color': colors.get_color(fg=colors.fg.red), 'name': Level.ERROR,
-                       'level': 3}
-    CRITICAL: '_Level' = {'color': colors.get_color(bg=colors.bg.red), 'name': Level.CRITICAL,
-                          'level': 4}
-
-    def __getitem__(self, key):
-        return self[key]
+    def __str__(self) -> str:
+        return str(self.level_type.value)
 
     @staticmethod
-    def find_level(level):
-        """
-        It is used to find the dict that represents the level in input
-        :param level: desired level
-        :type level: Level
-        :raise: LoggerLevelException if the input level is not in Level class
-        :return: dictionary with all information, including colors, number level and name
-        :rtype: dict
-        """
-        if level is None:
-            raise LoggerLevelException('NONE')
-
-        level = level.upper()
-
-        if level == _Level.NO_LOGGER['name']:
-            return _Level.NO_LOGGER
-        elif level == _Level.DEBUG['name']:
-            return _Level.DEBUG
-        elif level == _Level.INFO['name']:
-            return _Level.INFO
-        elif level == _Level.WARNING['name']:
-            return _Level.WARNING
-        elif level == _Level.ERROR['name']:
-            return _Level.ERROR
-        elif level == _Level.CRITICAL['name']:
-            return _Level.CRITICAL
-        else:
-            raise LoggerLevelException(level)
+    def get_level(level: Level):
+        for enum_level in _Level:
+            if enum_level.level_type == level:
+                return enum_level
+        raise LoggerLevelException(level)
 
 
-class _Logger(object):
-    """
-    Logger class provides all the tools needed to log everything
-    ...
-    Attributes
-    ----------
-    __name: str
-        The name of the logger useful to find an instance of the logger from get_logger()
-    __domain: str
-        The entire domain of the logger, if it is generated in su subpackage of the project
-    __path: str
-        The path to save the log. Default value it the path of the project
-    __print_level: Level
-        The level of print logging
-    __save_level: Level
-        The level of save logging
-
-    Methods
-    -------
-    setting(print_level, save_level)
-        Customize the property of printing and saving level of the logger
-    debug(test)
-        Print debug log
-    info(text)
-        Print info log
-    warning(text)
-        Print warning log
-    error(text)
-        Print error log
-    critical(text)
-        Print critical log
-
-    Properties
-    ----------
-    print_level: Level
-        Allows to modified the __print_level attribute
-    save_level: Level
-        Allows to modified the __save_level attribute
-    """
+class Logger:
     lock_print = False
     lock_save = False
 
-    def __init__(self, name, domain, path,
-                 print_level: Level = Level.DEBUG,
-                 save_level: Level = Level.NO_LOGGER):
-        """
-        Create an instance of the logger
-        :param name: Name of logger
-        :type name: str
-        :param domain: domain of logger if you want a sub domain
-        :type domain: str
-        :param path: path of saving
-        :type path: str
-        :param print_level: level of printing log
-        :type print_level: Level
-        :param save_level: level of saving log
-        :type save_level: Level
-        """
-        self.__name = name
-        self.__domain = domain
-        self.__path = path
-        self.__print_level = _Level.find_level(print_level)
-        self.__save_level = _Level.find_level(save_level)
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Logger, cls).__new__(cls)
+        return cls.instance
 
-    def __str__(self):
-        return self.__name
+    def __init__(self):
+        self.__name = None
+        self.__log_folder = None
+        self.__print_level: _Level = _Level.INFO
+        self.__save_level: _Level = _Level.NO_LOGGER
 
-    def __repr__(self):
-        return '<Logger object: \'name\'={}, ' \
-               '\'domain\'={}, \'print level\'={}, ' \
-               '\'save level\'={}, \'path\'={}>'.format(self.__name, self.__domain,
-                                                        self.__print_level['name'],
-                                                        self.__save_level['name'], self.__path)
-
-    def _get_name(self):
-        """
-        Return the name of the logger
-        :return: name of logger
-        :rtype: str
-        """
-        return self.__name
-
-    def _get_complete_name(self):
-        """
-        Return the complete name of logger
-        :return: domain + name of the logger as a path
-        :rtype: str
-        """
-        if self.__domain == self.__name:
-            return self.__name
-        return self.__domain + '/' + self.__name
-
-    @property
-    def print_level(self):
-        return self.__print_level
-
-    @print_level.setter
-    def print_level(self, level):
-        new_level = _Level.find_level(level)
-        self.__print_level = new_level
-
-    @property
-    def save_level(self):
-        return self.__save_level
-
-    @save_level.setter
-    def save_level(self, level):
-        new_level = _Level.find_level(level)
-        self.__save_level = new_level
-
-    def setting(self, print_level=None, save_level=None):
-        """
-        Change the setting of printing and saving logging
-        :param print_level: custom level of printing log
-        :type print_level: Level
-        :param save_level: custom level of saving log
-        :type save_level: Level
-        :return: No object be returned
-        :rtype: None
-        """
+    def configure(self, name=None, log_folder=None, print_level=None, save_level=None):
+        if name is not None:
+            self.name = name
+        if log_folder is not None:
+            self.folder = log_folder
         if print_level is not None:
             self.print_level = print_level
-
         if save_level is not None:
             self.save_level = save_level
 
-    def info(self, text):
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name: str):
+        if not isinstance(name, str):
+            raise TypeError("The name has to be a string")
+        self.__name = name
+
+    @property
+    def folder(self):
+        return self.__log_folder
+
+    @folder.setter
+    def folder(self, folder_path: str):
+        import os
+        if not isinstance(folder_path, str):
+            raise TypeError("The folder path has to be a string")
+
+        path = os.path.abspath(folder_path)
+        if os.path.exists(path) and not os.path.isdir(path):
+            raise ValueError("The specified path is not a directory")
+
+        if os.path.exists(path):
+            folder_name = os.path.basename(path)
+            if folder_name != 'logs':
+                path = os.path.join(path, 'logs')
+                os.makedirs(path, exist_ok=True)
+        else:
+            path = os.path.join(path, 'logs')
+            os.makedirs(path)
+
+        self.__log_folder = path
+
+    @property
+    def print_level(self):
+        return str(self.__print_level)
+
+    @print_level.setter
+    def print_level(self, level: Level):
+        self.__print_level = _Level.get_level(level)
+
+    @property
+    def save_level(self):
+        return str(self.__save_level)
+
+    @save_level.setter
+    def save_level(self, level: Level):
+        self.__save_level = _Level.get_level(level)
+
+    def info(self, *args):
         """
         Print an _info_ log
         :param text: body of log
-        :type text: str
         """
+        text = ' '.join([str(arg) for arg in args])
         self.__log(_Level.INFO, text)
 
-    def error(self, text):
+    def error(self, *args):
         """
         Print an _error_ log
         :param text: body of log
-        :type text: str
         """
+        text = ' '.join([str(arg) for arg in args])
         self.__log(_Level.ERROR, text)
 
-    def critical(self, text):
+    def critical(self, *args):
         """
         Print an _critical_ log
         :param text: body of log
         :type text: str
         """
+        text = ' '.join([str(arg) for arg in args])
         self.__log(_Level.CRITICAL, text)
 
-    def debug(self, text):
+    def debug(self, *args):
         """
         Print an _debug_ log
         :param text: body of log
         :type text: str
         """
+        text = ' '.join([str(arg) for arg in args])
         self.__log(_Level.DEBUG, text)
 
-    def warning(self, text):
+    def warning(self, *args):
         """
         Print an _warning_ log
         :param text: body of log
         :type text: str
         """
+        text = ' '.join([str(arg) for arg in args])
         self.__log(_Level.WARNING, text)
 
     def __log(self, level: _Level, text: str):
@@ -281,16 +178,23 @@ class _Logger(object):
         :param text: body of printing or saving log
         :type text: str
         """
-        s = self.__formatter(level['name'], text)
+        if self.__name is None:
+            raise LoggerNameException("Set the _name_ variable")
 
-        if self.__print_level['level'] <= level['level']:
-            string = colors.start + level['color'] + s + colors.stop
-            _Logger.__print_log(string)
+        s = self.__formatter(level, text)
 
-        if self.__save_level['level'] <= level['level']:
-            _Logger.__save_log(s, self.__path)
+        if self.__print_level.level <= level.level:
+            string = colors.start + level.color + s + colors.stop
+            Logger.__print_log(string)
 
-    def __formatter(self, level, text):
+        if self.__save_level.level <= level.level:
+            if self.__log_folder is None:
+                # TODO trovare un path
+                raise Warning("Set the _folder_ variable in order to save the log")
+            else:
+                Logger.__save_log(s, self.__log_folder)
+
+    def __formatter(self, level: _Level, text):
         """
         Depends on the level, formats the logging string
         :param level: level of loggin
@@ -300,12 +204,9 @@ class _Logger(object):
         :return: completed string, composed by: timestamp + domain of logger + name of logger + logging message
         :rtype: str
         """
-        if len(self._get_complete_name()) > 30:
-            name_class = self._get_complete_name()[:3] + '...' + self._get_complete_name()[-24:]
-        else:
-            name_class = self._get_complete_name()
+        from datetime import datetime
         time = datetime.now().strftime("%y-%b-%d %H:%M:%S.%f")
-        return '{} | {:8} | {:30} | {:80}'.format(time, level, name_class, str(text))
+        return f'{time} | {level:<8} | {self.name:<30} | {text:<80}'
 
     @staticmethod
     def __save_log(text, path):
@@ -317,15 +218,12 @@ class _Logger(object):
         :type path: str
         """
         text = text + '\n'
+        from datetime import datetime
+        import os
+
         time = datetime.now().strftime('%Y-%m-%d')
-
-        if path is None:
-            path = os.getcwd()
-
-        if not os.path.exists(path + '/logs'):
-            os.makedirs(path + '/logs')
-
-        path = path + '/logs/{}.log'.format(time)
+        file_name = f'{time}.log'
+        path = os.path.join(path, file_name)
 
         with open(path, 'a') as file:
             file.write(text)
@@ -337,181 +235,9 @@ class _Logger(object):
         :param text: log message
         :type text: str
         """
-        while _Logger.lock_print:
+        while Logger.lock_print:
             pass
-        _Logger.lock_print = True
+        Logger.lock_print = True
         print(text)
-        _Logger.lock_print = False
+        Logger.lock_print = False
 
-
-class __Configuration:
-    configured: bool = False
-    domain: str = 'loggerpy'
-    path: str = None
-    logger_tree: [_Logger] = []
-    print_level: Level = Level.DEBUG
-    save_level: Level = Level.NO_LOGGER
-
-
-def __validate_path(path):
-    if path == '' or path == '\n' or path == '\t':
-        raise LoggerPathException(path)
-
-    if path is None:
-        if __Configuration.path is None:
-            return os.getcwd()
-        else:
-            return __Configuration.path
-    else:
-        if os.path.isabs(path):
-            if not os.path.exists(path):
-                os.mkdir(path)
-            return path
-        elif __Configuration.path is not None:
-            complete_path = __Configuration.path + '/' + path
-            if not os.path.exists(complete_path):
-                os.makedirs(complete_path)
-            return complete_path
-        else:
-            complete_path = os.path.abspath(path)
-            if not os.path.exists(complete_path):
-                os.makedirs(complete_path)
-            return complete_path
-
-
-def configure(domain=None, info=False, print_level=None, save_level=None, path=None):
-    """
-    This method manages all the possible configuration of loggerpy package.
-    If it is not configured a warning stamp is printed and it is configured with default setting
-    :param domain: Main domain of logger. This can not be change after the first initialization
-    :type domain: str
-    :param info: If you want to print an info message at the first configuration
-    :type info: bool
-    :param print_level: set the default print level
-    :type print_level: Level
-    :param save_level: set the default save level
-    :type save_level: Level
-    :param path: Set the path to save log. If the path is an absolute path it is used directly, otherwise it is
-        put after the project path. The default value is the project path
-
-        E.g.
-        Relative path
-        -------------
-        >>> configure(path='relative_path')
-        In this case the used path is:
-        > /path/to/the/project/relative_path
-
-        Absolute path
-        -------------
-        >>> configure(path='absolute_path')
-        It is setted as global path
-        > /absolute_path/
-
-    :type path: str
-    """
-
-    if __Configuration.configured:
-        if print_level is not None:
-            __Configuration.print_level = print_level
-
-        if save_level is not None:
-            __Configuration.save_level = save_level
-
-    else:
-        if domain is not None:
-            __Configuration.domain = domain
-
-        try:
-            __Configuration.path = __validate_path(path)
-        except LoggerPathException as e:
-            raise e
-
-        logger = _Logger(__Configuration.domain, __Configuration.domain, __Configuration.path)
-        __Configuration.logger_tree.append(logger)
-
-        if print_level is not None:
-            logger.print_level = print_level
-            __Configuration.print_level = print_level
-
-        if save_level is not None:
-            logger.save_level = save_level
-            __Configuration.save_level = save_level
-
-        if info:
-            logger.critical('Logger configured...')
-            # next: make the text customizable
-            # next: make the log level customizable
-
-        __Configuration.configured = True
-
-
-def get_logger(name, print_level=None, save_level=None, path=None):
-    """
-    This method allows to instance a logger object.
-    If it is given a name that correspond to another already logger instanced, it is returned. In this case the path
-    can not be changed.
-    :param name: Name of the logger
-    :type name: str
-    :param print_level: level of print logging
-    :type print_level: Level
-    :param save_level:  level of save logging
-    :type save_level: Level
-    :param path: path of save logging. The default path is the one used as a parameter in the configuration path
-        if entered otherwise it is the project path. If `path` is absolute, it is used directly,
-        otherwise the relative path is inserted after the configured global path.
-    :type path: str
-    :return: return the logger with the input configuration
-    :rtype: _Logger
-    """
-
-    if not __Configuration.configured:
-        import warnings
-        warnings.warn('No configurations are done. The default setting are used.')
-        configure()
-
-    if name is None:
-        raise LoggerNameException('The input name is None')
-    elif name == '' or name == '\n' or name == '\t':
-        raise LoggerNameException('The input name is empty or a special character')
-
-    try:
-        complete_path = __validate_path(path)
-    except LoggerPathException as e:
-        raise e
-
-    if __find_logger(name) is None:
-        logger = _Logger(name, __Configuration.domain, complete_path,
-                         print_level=__Configuration.print_level, save_level=__Configuration.save_level)
-        __Configuration.logger_tree.append(logger)
-
-    else:
-        logger = __find_logger(name)
-
-        if path is not None:
-            import warnings
-            warnings.warn('The input name corresponds to an already existing logger and it is trying to '
-                          'modify the saving path. This modification is not allowed so it is not applied.',
-                          stacklevel=2)
-            pass
-
-    if print_level is not None:
-        logger.print_level = print_level
-
-    if save_level is not None:
-        logger.save_level = save_level
-
-    return logger
-
-
-def __find_logger(name):
-    """
-    This method search a logger in logger_tree with the name as input
-    :param name: input name
-    :type name: str
-    :return: Return an instance of the logger if found, otherwise return None
-    :rtype: _Logger
-    """
-    for logger in __Configuration.logger_tree:
-        if logger._get_name() is name:
-            return logger
-    return None

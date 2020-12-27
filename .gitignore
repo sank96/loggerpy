@@ -11,3 +11,6 @@ loggerpy.egg-info/
 # test
 test/
 test.py
+
+# MacOS
+.DS_Store
