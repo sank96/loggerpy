@@ -84,7 +84,7 @@ class Logger:
     def name(self, name: str):
         if not isinstance(name, str):
             raise TypeError("The name has to be a string")
-        self.__name = name
+        self.__name = name.upper()
 
     @property
     def folder(self):
@@ -127,61 +127,75 @@ class Logger:
     def save_level(self, level: Level):
         self.__save_level = _Level.get_level(level)
 
-    def info(self, *args):
+    def info(self, *args, source: str = None):
         """
         Print an _info_ log
-        :param text: body of log
+        :param source: the piece of code from the log came from
+        :type source: str
+        :param args: body
+        :type args: list, str
         """
         text = ' '.join([str(arg) for arg in args])
-        self.__log(_Level.INFO, text)
+        self.__log(_Level.INFO, source, text)
 
-    def error(self, *args):
+    def error(self, *args, source: str = None):
         """
         Print an _error_ log
-        :param text: body of log
+        :param source: the piece of code from the log came from
+        :type source: str
+        :param args: body
+        :type args: list, str
         """
         text = ' '.join([str(arg) for arg in args])
-        self.__log(_Level.ERROR, text)
+        self.__log(_Level.ERROR, source, text)
 
-    def critical(self, *args):
+    def critical(self, *args, source: str = None):
         """
         Print an _critical_ log
-        :param text: body of log
-        :type text: str
+        :param source: the piece of code from the log came from
+        :type source: str
+        :param args: body
+        :type args: list, str
         """
         text = ' '.join([str(arg) for arg in args])
-        self.__log(_Level.CRITICAL, text)
+        self.__log(_Level.CRITICAL, source, text)
 
-    def debug(self, *args):
+    def debug(self, *args, source: str = None):
         """
         Print an _debug_ log
-        :param text: body of log
-        :type text: str
+        :param source: the piece of code from the log came from
+        :type source: str
+        :param args: body
+        :type args: list, str
         """
         text = ' '.join([str(arg) for arg in args])
-        self.__log(_Level.DEBUG, text)
+        self.__log(_Level.DEBUG, source, text)
 
-    def warning(self, *args):
+    def warning(self, *args, source: str = None):
         """
         Print an _warning_ log
-        :param text: body of log
-        :type text: str
+        :param source: the piece of code from the log came from
+        :type source: str
+        :param args: body
+        :type args: list, str
         """
         text = ' '.join([str(arg) for arg in args])
-        self.__log(_Level.WARNING, text)
+        self.__log(_Level.WARNING, source, text)
 
-    def __log(self, level: _Level, text: str):
+    def __log(self, level: _Level, source: str, text: str):
         """
         This hidden method prepares the setting to print and save the log, depending on the chosen level
         :param level: level of printing and saving log
         :type level: _Level
+        :param source: the piece of code from the log came from
+        :type source: str
         :param text: body of printing or saving log
         :type text: str
         """
-        if self.__name is None:
+        if self.name is None:
             raise LoggerNameException("Set the _name_ variable")
 
-        s = self.__formatter(level, text)
+        s = self.__formatter(level, source, text)
 
         if self.__print_level.level <= level.level:
             string = colors.start + level.color + s + colors.stop
@@ -194,11 +208,13 @@ class Logger:
             else:
                 Logger.__save_log(s, self.__log_folder)
 
-    def __formatter(self, level: _Level, text):
+    def __formatter(self, level: _Level, source: str, text: str):
         """
         Depends on the level, formats the logging string
-        :param level: level of loggin
+        :param level: level of logging
         :type level: str
+        :param source: the piece of code from the log came from
+        :type source: str
         :param text: body of logging
         :type text: str
         :return: completed string, composed by: timestamp + domain of logger + name of logger + logging message
@@ -206,7 +222,15 @@ class Logger:
         """
         from datetime import datetime
         time = datetime.now().strftime("%y-%b-%d %H:%M:%S.%f")
-        return f'{time} | {level:<8} | {self.name:<30} | {text:<80}'
+
+        if source is None:
+            name = self.name
+        else:
+            name = f"{self.name}/{source.upper()}"
+
+        if len(name) > 30:
+            name = '...' + name[-27:]
+        return f'{time} | {level:<8} | {name:<30} | {text:<80}'
 
     @staticmethod
     def __save_log(text, path):
@@ -240,4 +264,3 @@ class Logger:
         Logger.lock_print = True
         print(text)
         Logger.lock_print = False
-
