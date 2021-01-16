@@ -1,17 +1,30 @@
 import setuptools
+import sys
 import pkg_resources
+from configparser import ConfigParser
 
 NAME = "loggerpy"
 
-print('Old version: {}'.format(pkg_resources.get_distribution(NAME).version))
-CLIENT_VERSION = input('Input new version: ')
+config: ConfigParser = ConfigParser()
+config_path = '.upload_pypi.conf'
+config.read(config_path)
+
+ap = config.getboolean('pypi', 'upload')
+at = config.getboolean('testpypi', 'upload')
+
+if ap:
+    VERSION = config.get('pypi', 'version')
+elif at:
+    VERSION = config.get('testpypi', 'version')
+else:
+    raise RuntimeError('LOSE')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name=NAME,
-    version=CLIENT_VERSION,
+    version=VERSION,
     author="Mattia Sanchioni",
     author_email="mattia.sanchioni.dev@gmail.com",
     description="The simplest Python logger for everyday tasks.",
